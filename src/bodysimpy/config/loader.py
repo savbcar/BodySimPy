@@ -14,6 +14,6 @@ def load_config(path: str | Path) -> SimulationConfig:
         raw_config = yaml.safe_load(stream)
 
     if not isinstance(raw_config, dict):
-        raise ValueError("Configuration root must be a YAML mapping.")
+        raise TypeError("Configuration root must be a YAML mapping.")
 
     return SimulationConfig.model_validate(raw_config)
