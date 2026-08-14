@@ -4,6 +4,9 @@ from math import pi, sqrt
 from bodysimpy.domain.materials import IsotropicMaterial
 from bodysimpy.domain.sections import RectangularHollowSection
 
+from bodysimpy.domain.results import SimulationResult
+from bodysimpy.domain.structural_model import StructuralModel
+
 
 @dataclass(frozen=True, slots=True)
 class CantileverResult:
@@ -51,3 +54,22 @@ def solve_cantilever(
         root_bending_stress_pa=root_bending_stress,
         first_natural_frequency_hz=first_natural_frequency,
     )
+
+
+class AnalyticalSolver:
+    """Solver adapter for the analytical cantilever reference solution."""
+
+    def run(self, model: StructuralModel) -> SimulationResult:
+        result = solve_cantilever(
+            section=model.section,
+            material=model.material,
+            length_m=model.length_m,
+            tip_force_n=model.tip_force_n,
+        )
+
+        return SimulationResult(
+            solver_name="analytical",
+            tip_deflection_m=result.tip_deflection_m,
+            root_bending_stress_pa=result.root_bending_stress_pa,
+            natural_frequencies_hz=(result.first_natural_frequency_hz,),
+        )
