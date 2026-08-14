@@ -35,6 +35,11 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
+      - name: Install CalculiX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y calculix-ccx
+
       - name: Install BodySimPy
         run: python -m pip install -e ".[dev]"
 
