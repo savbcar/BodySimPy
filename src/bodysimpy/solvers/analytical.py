@@ -2,9 +2,8 @@ from dataclasses import dataclass
 from math import pi, sqrt
 
 from bodysimpy.domain.materials import IsotropicMaterial
-from bodysimpy.domain.sections import RectangularHollowSection
-
 from bodysimpy.domain.results import SimulationResult
+from bodysimpy.domain.sections import RectangularHollowSection
 from bodysimpy.domain.structural_model import StructuralModel
 
 
