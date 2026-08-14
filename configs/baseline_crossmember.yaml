@@ -16,6 +16,9 @@ material:
 loading:
   tip_force_n: 1000
 
+mesh:
+  elements: 20
+
 analysis:
   static: true
   modal:

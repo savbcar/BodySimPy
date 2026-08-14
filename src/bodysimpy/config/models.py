@@ -12,6 +12,10 @@ class StrictModel(BaseModel):
     )
 
 
+class MeshConfig(StrictModel):
+    elements: int = Field(gt=0)
+
+
 class ProjectConfig(StrictModel):
     name: str = Field(min_length=1)
 
@@ -56,3 +60,4 @@ class SimulationConfig(StrictModel):
     material: MaterialConfig
     loading: LoadingConfig
     analysis: AnalysisConfig
+    mesh: MeshConfig
