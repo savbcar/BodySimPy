@@ -17,3 +17,4 @@ def test_load_baseline_configuration() -> None:
     assert config.loading.tip_force_n == 1000.0
     assert config.analysis.static is True
     assert config.analysis.modal.modes == 10
+    assert config.mesh.elements == 20

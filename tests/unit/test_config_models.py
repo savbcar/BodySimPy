@@ -16,6 +16,9 @@ def valid_configuration() -> dict[str, object]:
             "height_m": 0.040,
             "thickness_m": 0.0015,
         },
+        "mesh": {
+            "elements": 20,
+        },
         "material": {
             "youngs_modulus_pa": 210e9,
             "poisson_ratio": 0.30,
@@ -40,6 +43,7 @@ def test_valid_simulation_configuration() -> None:
     assert config.geometry.thickness_m == pytest.approx(0.0015)
     assert config.material.youngs_modulus_pa == pytest.approx(210e9)
     assert config.analysis.modal.modes == 10
+    assert config.mesh.elements == 20
 
 
 def test_configuration_rejects_impossible_section() -> None:

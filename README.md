@@ -50,3 +50,40 @@ Python · NumPy · SciPy · pandas · pytest · Ruff · mypy · Typer · Git · 
 ## Planned Integration
 
 CalculiX · PyTorch
+
+## Current Crossmember Surrogate
+
+The current baseline model represents a simplified automotive body structural crossmember as a uniform thin-walled rectangular hollow section.
+
+It is intended to validate the BodySimPy simulation workflow and solver automation architecture rather than reproduce a production vehicle body structure.
+
+### Current assumptions
+
+- uniform prismatic cross-section
+- linear-elastic isotropic material
+- idealized cantilever boundary condition
+- transverse point loading
+- beam-element representation
+- small-deformation structural response
+
+### Not currently represented
+
+- stamped sheet-metal geometry
+- local beads or reinforcements
+- joints and spot welds
+- complex vehicle boundary conditions
+- production load cases
+- proprietary vehicle geometry
+
+## Planned Geometry Evolution
+
+The structural representation will evolve incrementally from the validated beam surrogate toward a parameterized thin-walled shell model.
+
+Planned parameters include:
+
+- wall thickness
+- section depth
+- flange width
+- local reinforcement
+- mesh density
+- joint and spot-weld idealization
