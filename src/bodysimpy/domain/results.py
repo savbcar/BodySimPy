@@ -8,6 +8,6 @@ class SimulationResult:
 
     solver_name: str
     tip_deflection_m: float
-    root_bending_stress_pa: float | None = None
+    max_axial_stress_pa: float | None = None
     natural_frequencies_hz: tuple[float, ...] = ()
     work_directory: Path | None = None

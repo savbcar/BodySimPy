@@ -31,3 +31,5 @@ def test_build_input_deck() -> None:
     assert "*STATIC" in deck
     assert "*CLOAD" in deck
     assert "*NODE PRINT,NSET=TIP" in deck
+    assert "*EL FILE,OUTPUT=3D" in deck
+    assert "S,NOE" in deck
