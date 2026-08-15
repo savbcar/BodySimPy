@@ -11,3 +11,12 @@ class SimulationResult:
     max_axial_stress_pa: float | None = None
     natural_frequencies_hz: tuple[float, ...] = ()
     work_directory: Path | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ModalResult:
+    """Solver-independent modal-analysis result."""
+
+    solver_name: str
+    natural_frequencies_hz: tuple[float, ...]
+    work_directory: Path | None = None
