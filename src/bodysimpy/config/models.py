@@ -99,3 +99,14 @@ class ThicknessSweepConfig(StrictModel):
             raise ValueError("Thickness sweep values must be unique.")
 
         return self
+
+
+class SimulationQAConfig(StrictModel):
+    stress_limit_pa: float = Field(gt=0.0)
+
+    maximum_frequency_shift_percent: float = Field(ge=0.0)
+
+    outlier_z_threshold: float = Field(
+        default=3.0,
+        gt=0.0,
+    )
