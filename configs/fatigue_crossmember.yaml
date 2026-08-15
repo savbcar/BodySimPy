@@ -1,0 +1,18 @@
+fatigue:
+  sn_model:
+    reference_stress_amplitude_pa: 2.00e8
+    reference_cycles: 1.00e6
+    slope_exponent: 5.0
+
+  loading_blocks:
+    - name: normal_operation
+      stress_amplitude_pa: 1.20e8
+      cycles: 500000
+
+    - name: elevated_load
+      stress_amplitude_pa: 1.80e8
+      cycles: 100000
+
+    - name: severe_load
+      stress_amplitude_pa: 2.40e8
+      cycles: 10000

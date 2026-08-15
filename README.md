@@ -110,3 +110,30 @@ Reported quantities include:
 - standardized linear sensitivity coefficients
 
 The stochastic model is intended as an engineering uncertainty study for the simplified structural surrogate and does not represent production vehicle reliability.
+
+
+## Fatigue Assessment
+
+BodySimPy includes an initial stress-life fatigue assessment module based on a power-law S-N model and linear Palmgren-Miner cumulative damage.
+
+The module evaluates constant-amplitude loading blocks and reports:
+
+- predicted cycles to failure for each stress amplitude
+- individual Miner damage contributions
+- cumulative damage fraction
+- estimated repeated-spectrum life
+- critical loading block
+
+The current fatigue model is intended for workflow development and engineering-method demonstration. Example S-N parameters are generic and are not representative of proprietary vehicle material or joint durability data.
+
+### Current limitations
+
+The initial implementation does not yet include:
+
+- rainflow counting
+- mean-stress corrections
+- weld-class fatigue curves
+- notch effects
+- multiaxial fatigue
+- low-cycle fatigue
+- crack-growth modelling
