@@ -36,6 +36,16 @@ class TrainingResult:
     split: DataSplit
 
 
+@dataclass(frozen=True, slots=True)
+class FixedValidationTrainingResult:
+    model: StructuralSurrogate
+    feature_standardization: Standardization
+    target_standardization: Standardization
+    train_losses: tuple[float, ...]
+    validation_losses: tuple[float, ...]
+    best_epoch: int
+
+
 def create_data_split(
     sample_count: int,
     *,
@@ -258,4 +268,159 @@ def save_training_checkpoint(
             "best_epoch": (result.best_epoch),
         },
         checkpoint_path,
+    )
+
+
+def train_surrogate_fixed_validation(
+    train_features: NDArray[np.float64],
+    train_targets: NDArray[np.float64],
+    validation_features: NDArray[np.float64],
+    validation_targets: NDArray[np.float64],
+    *,
+    seed: int,
+    batch_size: int = 32,
+    learning_rate: float = 1e-3,
+    maximum_epochs: int = 1000,
+    patience: int = 50,
+) -> FixedValidationTrainingResult:
+    """Train using an explicitly fixed validation dataset."""
+
+    torch.manual_seed(seed)
+
+    feature_statistics = fit_standardization(train_features)
+
+    target_statistics = fit_standardization(train_targets)
+
+    normalized_train_features = standardize(
+        train_features,
+        feature_statistics,
+    )
+
+    normalized_train_targets = standardize(
+        train_targets,
+        target_statistics,
+    )
+
+    normalized_validation_features = standardize(
+        validation_features,
+        feature_statistics,
+    )
+
+    normalized_validation_targets = standardize(
+        validation_targets,
+        target_statistics,
+    )
+
+    train_dataset = StructuralSurrogateDataset(
+        normalized_train_features,
+        normalized_train_targets,
+    )
+
+    validation_dataset = StructuralSurrogateDataset(
+        normalized_validation_features,
+        normalized_validation_targets,
+    )
+
+    training_loader: DataLoader[tuple[Tensor, Tensor]] = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+    )
+
+    validation_loader: DataLoader[tuple[Tensor, Tensor]] = DataLoader(
+        validation_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+    )
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model = StructuralSurrogate().to(device)
+
+    optimizer = Adam(
+        model.parameters(),
+        lr=learning_rate,
+    )
+
+    loss_function = nn.MSELoss()
+
+    train_losses: list[float] = []
+    validation_losses: list[float] = []
+
+    best_validation_loss = float("inf")
+    best_model_state = deepcopy(model.state_dict())
+
+    best_epoch = 0
+    epochs_without_improvement = 0
+
+    for epoch in range(
+        1,
+        maximum_epochs + 1,
+    ):
+        model.train()
+
+        batch_losses: list[float] = []
+
+        for (
+            features_batch,
+            targets_batch,
+        ) in training_loader:
+            features_batch = features_batch.to(device)
+
+            targets_batch = targets_batch.to(device)
+
+            optimizer.zero_grad()
+
+            predictions = model(features_batch)
+
+            loss = loss_function(
+                predictions,
+                targets_batch,
+            )
+
+            loss.backward()
+            optimizer.step()
+
+            batch_losses.append(float(loss.item()))
+
+        train_loss = float(np.mean(batch_losses))
+
+        validation_loss = _mean_loss(
+            model,
+            validation_loader,
+            loss_function,
+            device,
+        )
+
+        train_losses.append(train_loss)
+
+        validation_losses.append(validation_loss)
+
+        if validation_loss < best_validation_loss:
+            best_validation_loss = validation_loss
+
+            best_model_state = deepcopy(model.state_dict())
+
+            best_epoch = epoch
+
+            epochs_without_improvement = 0
+
+        else:
+            epochs_without_improvement += 1
+
+        if epochs_without_improvement >= patience:
+            break
+
+    model.load_state_dict(best_model_state)
+
+    model.to("cpu")
+    model.eval()
+
+    return FixedValidationTrainingResult(
+        model=model,
+        feature_standardization=(feature_statistics),
+        target_standardization=(target_statistics),
+        train_losses=tuple(train_losses),
+        validation_losses=tuple(validation_losses),
+        best_epoch=best_epoch,
     )
