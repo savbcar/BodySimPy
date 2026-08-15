@@ -137,3 +137,30 @@ The initial implementation does not yet include:
 - multiaxial fatigue
 - low-cycle fatigue
 - crack-growth modelling
+
+## PyTorch Structural Surrogate
+
+BodySimPy includes a feed-forward neural-network surrogate trained on a six-dimensional CalculiX design dataset.
+
+### Inputs
+
+- wall thickness
+- section height
+- section width
+- Young's modulus
+- material density
+- applied tip force
+
+### Predicted responses
+
+- maximum axial stress
+- tip displacement
+- mode-1 natural frequency
+
+The training dataset is generated using Latin Hypercube sampling across a bounded engineering design space and evaluated using automated static and modal CalculiX analyses.
+
+The dataset is separated into training, validation and held-out test subsets. Input and target normalization statistics are fitted exclusively on the training subset.
+
+Training includes validation monitoring, early stopping and best-model checkpointing.
+
+The surrogate is intended for interpolation within the sampled design space and does not replace finite-element validation outside that domain.
