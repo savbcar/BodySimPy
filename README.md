@@ -164,3 +164,26 @@ The dataset is separated into training, validation and held-out test subsets. In
 Training includes validation monitoring, early stopping and best-model checkpointing.
 
 The surrogate is intended for interpolation within the sampled design space and does not replace finite-element validation outside that domain.
+
+## Simulation QA Agent
+
+BodySimPy includes a deterministic simulation-quality-assurance agent
+that orchestrates validated analysis tools after a structural simulation
+completes.
+
+Depending on available metadata, the agent can:
+
+- verify solver completion;
+- inspect simulation logs;
+- compare structural responses with a baseline;
+- check supplied stress thresholds;
+- detect excessive modal-frequency shifts;
+- screen results for statistical outliers;
+- produce a human-readable engineering summary.
+
+The agent does not independently generate engineering truth. Its role is
+to select and coordinate deterministic tools whose outputs remain
+testable and reviewable.
+
+See [`docs/simulation_qa_agent.md`](docs/simulation_qa_agent.md) for the
+workflow and limitations.

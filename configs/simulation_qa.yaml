@@ -1,0 +1,5 @@
+stress_limit_pa: 3.50e8
+
+maximum_frequency_shift_percent: 10.0
+
+outlier_z_threshold: 3.0
