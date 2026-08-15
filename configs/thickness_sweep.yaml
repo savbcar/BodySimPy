@@ -1,0 +1,13 @@
+base_config: configs/baseline_crossmember.yaml
+
+thickness_values_m:
+  - 0.0010
+  - 0.0012
+  - 0.0014
+  - 0.0016
+  - 0.0018
+  - 0.0020
+
+output_csv: docs/validation/thickness_sweep.csv
+
+max_workers: 4

@@ -76,3 +76,25 @@ class SimulationConfig(StrictModel):
     analysis: AnalysisConfig
     mesh: MeshConfig
     stochastic: StochasticConfig | None = None
+
+
+class ThicknessSweepConfig(StrictModel):
+    """Configuration for a wall-thickness parameter sweep."""
+
+    base_config: str = Field(min_length=1)
+    thickness_values_m: tuple[float, ...]
+    output_csv: str = Field(min_length=1)
+    max_workers: int = Field(default=1, gt=0)
+
+    @model_validator(mode="after")
+    def validate_thickness_values(self) -> Self:
+        if not self.thickness_values_m:
+            raise ValueError("At least one thickness value is required.")
+
+        if any(thickness <= 0.0 for thickness in self.thickness_values_m):
+            raise ValueError("All thickness values must be positive.")
+
+        if len(set(self.thickness_values_m)) != len(self.thickness_values_m):
+            raise ValueError("Thickness sweep values must be unique.")
+
+        return self
