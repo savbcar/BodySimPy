@@ -15,8 +15,8 @@ class IsotropicMaterial:
         if self.youngs_modulus_pa <= 0.0:
             raise ValueError("Young's modulus must be positive.")
 
-        if not 0.0 < self.poisson_ratio < 0.5:
-            raise ValueError("Poisson ratio must be between 0 and 0.5.")
+        if not -1.0 < self.poisson_ratio < 0.5:
+            raise ValueError("Poisson ratio must be between -1.0 and 0.5.")
 
         if self.density_kg_m3 <= 0.0:
             raise ValueError("Density must be positive.")

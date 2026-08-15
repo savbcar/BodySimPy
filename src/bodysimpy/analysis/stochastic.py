@@ -29,6 +29,15 @@ class DistributionSummary:
     percentile_5: float
     percentile_95: float
 
+    @property
+    def coefficient_of_variation_percent(self) -> float:
+        """Return the sample coefficient of variation as a percentage."""
+
+        if self.mean == 0.0:
+            raise ValueError("Coefficient of variation is undefined for a zero mean.")
+
+        return abs(self.standard_deviation / self.mean) * 100.0
+
 
 @dataclass(frozen=True, slots=True)
 class SensitivityCoefficient:
