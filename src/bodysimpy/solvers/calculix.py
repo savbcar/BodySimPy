@@ -8,6 +8,7 @@ from pathlib import Path
 from bodysimpy.domain.results import SimulationResult
 from bodysimpy.domain.structural_model import StructuralModel
 from bodysimpy.solvers.parsers.dat_parser import parse_tip_displacement
+from bodysimpy.solvers.parsers.frd_parser import parse_max_abs_stress_component
 
 
 class CalculiXError(RuntimeError):
@@ -57,7 +58,7 @@ def build_input_deck(model: StructuralModel) -> str:
             (f"{model.material.youngs_modulus_pa:.12e},{model.material.poisson_ratio:.12e}"),
             "*DENSITY",
             f"{model.material.density_kg_m3:.12e}",
-            ("*BEAM SECTION,ELSET=EALL,MATERIAL=STEEL,SECTION=BOX"),
+            "*BEAM SECTION,ELSET=EALL,MATERIAL=STEEL,SECTION=BOX",
             (
                 f"{model.section.height_m:.12e},"
                 f"{model.section.width_m:.12e},"
@@ -73,8 +74,8 @@ def build_input_deck(model: StructuralModel) -> str:
             f"TIP,3,{model.tip_force_n:.12e}",
             "*NODE PRINT,NSET=TIP",
             "U",
-            "*NODE FILE,OUTPUT=2D",
-            "U",
+            "*EL FILE,OUTPUT=3D",
+            "S,NOE",
             "*END STEP",
         ]
     )
@@ -138,9 +139,13 @@ class CalculiXSolver:
             )
 
         dat_path = work_directory / f"{job_name}.dat"
+        frd_path = work_directory / f"{job_name}.frd"
 
         if not dat_path.exists():
             raise CalculiXError("CalculiX completed without producing the expected .dat file.")
+
+        if not frd_path.exists():
+            raise CalculiXError("CalculiX completed without producing the expected .frd file.")
 
         tip_node_id = 2 * model.mesh_elements + 1
 
@@ -150,8 +155,14 @@ class CalculiXSolver:
             component=3,
         )
 
+        max_axial_stress = parse_max_abs_stress_component(
+            frd_path,
+            component=1,
+        )
+
         return SimulationResult(
             solver_name="calculix",
             tip_deflection_m=tip_deflection,
+            max_axial_stress_pa=max_axial_stress,
             work_directory=work_directory,
         )

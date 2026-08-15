@@ -69,6 +69,6 @@ class AnalyticalSolver:
         return SimulationResult(
             solver_name="analytical",
             tip_deflection_m=result.tip_deflection_m,
-            root_bending_stress_pa=result.root_bending_stress_pa,
+            max_axial_stress_pa=result.root_bending_stress_pa,
             natural_frequencies_hz=(result.first_natural_frequency_hz,),
         )

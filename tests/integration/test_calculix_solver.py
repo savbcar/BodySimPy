@@ -36,4 +36,6 @@ def test_calculix_runs_static_beam_analysis() -> None:
 
     assert result.solver_name == "calculix"
     assert result.tip_deflection_m > 0.0
+    assert result.max_axial_stress_pa is not None
+    assert result.max_axial_stress_pa > 0.0
     assert result.work_directory is not None
