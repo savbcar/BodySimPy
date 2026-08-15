@@ -87,3 +87,26 @@ Planned parameters include:
 - local reinforcement
 - mesh density
 - joint and spot-weld idealization
+
+## Stochastic Engineering
+
+BodySimPy includes Monte Carlo uncertainty propagation for selected manufacturing, material and loading parameters.
+
+The baseline stochastic study evaluates 500 independently sampled configurations with uncertainty in:
+
+- wall thickness
+- Young's modulus
+- applied load
+
+Each sampled configuration is evaluated using automated CalculiX static and modal analyses.
+
+Reported quantities include:
+
+- response mean and standard deviation
+- 5th and 95th percentiles
+- stress-threshold exceedance fraction
+- mode-1 frequency variation
+- correlation analysis
+- standardized linear sensitivity coefficients
+
+The stochastic model is intended as an engineering uncertainty study for the simplified structural surrogate and does not represent production vehicle reliability.
