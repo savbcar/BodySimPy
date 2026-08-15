@@ -104,3 +104,4 @@ ruff format --check .
 ruff check .
 mypy src
 python -m pytest
+```

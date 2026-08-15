@@ -53,6 +53,25 @@ def test_distribution_summary() -> None:
 
     assert summary.percentile_95 > summary.mean
 
+    assert summary.coefficient_of_variation_percent == pytest.approx(
+        summary.standard_deviation / summary.mean * 100.0
+    )
+
+
+def test_distribution_summary_rejects_zero_mean_cov() -> None:
+    values = np.array(
+        [
+            -1.0,
+            1.0,
+        ],
+        dtype=float,
+    )
+
+    summary = summarize_distribution(values)
+
+    with pytest.raises(ValueError, match="zero mean"):
+        _ = summary.coefficient_of_variation_percent
+
 
 def test_stochastic_inputs_are_reproducible() -> None:
     config = build_stochastic_config()

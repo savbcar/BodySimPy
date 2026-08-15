@@ -47,3 +47,33 @@ def test_build_crossmember_model() -> None:
     assert model.material.youngs_modulus_pa == pytest.approx(210e9)
     assert model.tip_force_n == pytest.approx(1000.0)
     assert model.mesh_elements == 20
+
+
+def test_build_crossmember_model_accepts_valid_negative_poisson_ratio() -> None:
+    config = SimulationConfig.model_validate(
+        {
+            "project": {"name": "auxetic_crossmember"},
+            "geometry": {
+                "type": "rectangular_hollow_section",
+                "length_m": 1.0,
+                "width_m": 0.080,
+                "height_m": 0.040,
+                "thickness_m": 0.0015,
+            },
+            "material": {
+                "youngs_modulus_pa": 210e9,
+                "poisson_ratio": -0.20,
+                "density_kg_m3": 7850.0,
+            },
+            "loading": {"tip_force_n": 1000.0},
+            "mesh": {"elements": 20},
+            "analysis": {
+                "static": True,
+                "modal": {"modes": 10},
+            },
+        }
+    )
+
+    model = build_crossmember_model(config)
+
+    assert model.material.poisson_ratio == pytest.approx(-0.20)
