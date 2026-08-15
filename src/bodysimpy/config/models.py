@@ -54,6 +54,20 @@ class AnalysisConfig(StrictModel):
     modal: ModalConfig
 
 
+class NormalDistributionConfig(StrictModel):
+    mean: float
+    standard_deviation: float = Field(gt=0.0)
+
+
+class StochasticConfig(StrictModel):
+    samples: int = Field(gt=0)
+    seed: int
+    stress_threshold_pa: float = Field(gt=0.0)
+    thickness_m: NormalDistributionConfig
+    youngs_modulus_pa: NormalDistributionConfig
+    tip_force_n: NormalDistributionConfig
+
+
 class SimulationConfig(StrictModel):
     project: ProjectConfig
     geometry: GeometryConfig
@@ -61,3 +75,4 @@ class SimulationConfig(StrictModel):
     loading: LoadingConfig
     analysis: AnalysisConfig
     mesh: MeshConfig
+    stochastic: StochasticConfig | None = None

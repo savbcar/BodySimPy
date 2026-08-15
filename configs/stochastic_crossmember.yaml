@@ -1,0 +1,42 @@
+project:
+  name: stochastic_crossmember
+
+geometry:
+  type: rectangular_hollow_section
+  length_m: 1.0
+  width_m: 0.080
+  height_m: 0.040
+  thickness_m: 0.0015
+
+material:
+  youngs_modulus_pa: 2.10e11
+  poisson_ratio: 0.30
+  density_kg_m3: 7850
+
+loading:
+  tip_force_n: 1000
+
+mesh:
+  elements: 40
+
+analysis:
+  static: true
+  modal:
+    modes: 10
+
+stochastic:
+  samples: 500
+  seed: 42
+  stress_threshold_pa: 3.50e8
+
+  thickness_m:
+    mean: 0.0015
+    standard_deviation: 0.00005
+
+  youngs_modulus_pa:
+    mean: 2.10e11
+    standard_deviation: 5.0e9
+
+  tip_force_n:
+    mean: 1000.0
+    standard_deviation: 80.0

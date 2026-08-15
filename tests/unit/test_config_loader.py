@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from bodysimpy.config.loader import load_config
 
 
@@ -18,3 +20,14 @@ def test_load_baseline_configuration() -> None:
     assert config.analysis.static is True
     assert config.analysis.modal.modes == 10
     assert config.mesh.elements == 20
+
+
+def test_load_stochastic_configuration() -> None:
+    config = load_config("configs/stochastic_crossmember.yaml")
+
+    assert config.stochastic is not None
+    assert config.stochastic.samples == 500
+    assert config.stochastic.seed == 42
+    assert config.stochastic.thickness_m.mean == pytest.approx(0.0015)
+    assert config.stochastic.thickness_m.standard_deviation == pytest.approx(0.00005)
+    assert config.stochastic.youngs_modulus_pa.mean == pytest.approx(210e9)
