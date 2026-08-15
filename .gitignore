@@ -225,6 +225,9 @@ __pycache__/
 # Virtual environment
 .venv/
 
+# ML model checkpoints
+models/checkpoints/
+
 # Testing
 .pytest_cache/
 .coverage
