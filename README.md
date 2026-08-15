@@ -1,189 +1,242 @@
 # BodySimPy
 
-Python-driven structural CAE workflow automation for simplified automotive body structures.
+## Python-Driven Structural CAE Workflow Automation for Automotive Body Structures
 
-## Overview
+[![CI](https://github.com/savbcar/BodySimPy/actions/workflows/ci.yml/badge.svg)](https://github.com/savbcar/BodySimPy/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/savbcar/BodySimPy/ci.yml?branch=main&label=tests)](https://github.com/savbcar/BodySimPy/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-BodySimPy is an engineering software project exploring the automation of structural simulation workflows using Python.
+**BodySimPy** is a Python-based engineering software project for automating structural CAE studies around a simplified automotive body crossmember surrogate.
 
-The project combines:
+The project combines analytical mechanics, CalculiX finite-element analysis, structural dynamics, uncertainty propagation, fatigue assessment, parameter-study automation, PyTorch surrogate modelling, automated reporting, test-driven development, AI-assisted software development, and simulation QA.
 
-- parameterized structural models
-- automated FEA solver execution
-- static structural analysis
-- modal analysis
-- simulation result extraction
-- stochastic parameter studies
-- fatigue assessment
-- PyTorch surrogate modelling
-- automated testing and continuous integration
-- engineering result reporting
+The objective is not to reproduce a proprietary vehicle body model. The objective is to demonstrate how Python can be used to build a **reproducible, validated and extensible structural engineering workflow** around an open-source finite-element solver.
 
-## Current Status
+---
 
-The current implementation contains:
+## Engineering Workflow
 
-- validated geometric section calculations
-- material-domain models
-- analytical cantilever reference calculations
-- static deflection estimation
-- bending-stress estimation
-- first natural-frequency estimation
-- automated unit tests
-- Ruff formatting and linting
-- strict static type checking with mypy
-- GitHub Actions CI configuration
-- command-line interface
+```mermaid
+flowchart LR
+    A[YAML Configuration] --> B[Validated Domain Model]
 
-## Planned Workflow
+    B --> C[Analytical Solver]
+    B --> D[CalculiX FEA]
 
-Configuration → Model generation → FEA solver → Result parsing → Validation → Parameter studies → ML surrogate → Engineering report
+    D --> E[Static Analysis]
+    D --> F[Modal Analysis]
 
-## Engineering Philosophy
+    C --> G[FEA Validation]
+    E --> G
 
-Numerical simulation results are validated against independent analytical reference solutions wherever practical.
+    E --> H[Parameter Sweeps]
+    E --> I[Stochastic Analysis]
+    E --> J[Fatigue Assessment]
 
-## Current Technology
+    E --> K[FEA Dataset]
+    F --> K
 
-Python · NumPy · SciPy · pandas · pytest · Ruff · mypy · Typer · Git · GitHub Actions · Linux
+    K --> L[PyTorch Surrogate]
 
-## Planned Integration
+    G --> M[Engineering Results]
+    H --> M
+    I --> M
+    J --> M
+    L --> M
 
-CalculiX · PyTorch
-
-## Current Crossmember Surrogate
-
-The current baseline model represents a simplified automotive body structural crossmember as a uniform thin-walled rectangular hollow section.
-
-It is intended to validate the BodySimPy simulation workflow and solver automation architecture rather than reproduce a production vehicle body structure.
-
-### Current assumptions
-
-- uniform prismatic cross-section
-- linear-elastic isotropic material
-- idealized cantilever boundary condition
-- transverse point loading
-- beam-element representation
-- small-deformation structural response
-
-### Not currently represented
-
-- stamped sheet-metal geometry
-- local beads or reinforcements
-- joints and spot welds
-- complex vehicle boundary conditions
-- production load cases
-- proprietary vehicle geometry
-
-## Planned Geometry Evolution
-
-The structural representation will evolve incrementally from the validated beam surrogate toward a parameterized thin-walled shell model.
-
-Planned parameters include:
-
-- wall thickness
-- section depth
-- flange width
-- local reinforcement
-- mesh density
-- joint and spot-weld idealization
-
-## Stochastic Engineering
-
-BodySimPy includes Monte Carlo uncertainty propagation for selected manufacturing, material and loading parameters.
-
-The baseline stochastic study evaluates 500 independently sampled configurations with uncertainty in:
-
-- wall thickness
-- Young's modulus
-- applied load
-
-Each sampled configuration is evaluated using automated CalculiX static and modal analyses.
-
-Reported quantities include:
-
-- response mean and standard deviation
-- 5th and 95th percentiles
-- stress-threshold exceedance fraction
-- mode-1 frequency variation
-- correlation analysis
-- standardized linear sensitivity coefficients
-
-The stochastic model is intended as an engineering uncertainty study for the simplified structural surrogate and does not represent production vehicle reliability.
+    M --> N[Simulation QA Agent]
+    M --> O[Automated Reporting]
 
 
-## Fatigue Assessment
 
-BodySimPy includes an initial stress-life fatigue assessment module based on a power-law S-N model and linear Palmgren-Miner cumulative damage.
+## Software Architecture
 
-The module evaluates constant-amplitude loading blocks and reports:
+BodySimPy/
+│
+├── configs/
+│   └── simulation and study configurations
+│
+├── data/
+│   └── generated engineering / surrogate datasets
+│
+├── docs/
+│   ├── figures/
+│   ├── validation/
+│   ├── ai_assisted_development.md
+│   └── simulation_qa_agent.md
+│
+├── reports/
+│   └── automated engineering summaries
+│
+├── scripts/
+│   └── reproducible study and reporting entry points
+│
+├── src/bodysimpy/
+│   ├── agents/
+│   ├── analysis/
+│   ├── config/
+│   ├── domain/
+│   ├── ml/
+│   ├── modeling/
+│   ├── reporting/
+│   ├── solvers/
+│   │   └── parsers/
+│   └── workflows/
+│
+└── tests/
+    ├── integration/
+    └── unit/
 
-- predicted cycles to failure for each stress amplitude
-- individual Miner damage contributions
-- cumulative damage fraction
-- estimated repeated-spectrum life
-- critical loading block
 
-The current fatigue model is intended for workflow development and engineering-method demonstration. Example S-N parameters are generic and are not representative of proprietary vehicle material or joint durability data.
+Development Environment
 
-### Current limitations
+Primary development workflow:
 
-The initial implementation does not yet include:
+Linux through WSL / Ubuntu;
+Python virtual environment;
+Visual Studio Code;
+Git;
+GitHub;
+CalculiX;
+NumPy;
+SciPy;
+pandas;
+Matplotlib;
+Pydantic;
+Typer;
+pytest;
+Ruff;
+mypy;
+PyTorch;
+GitHub Copilot.
 
-- rainflow counting
-- mean-stress corrections
-- weld-class fatigue curves
-- notch effects
-- multiaxial fatigue
-- low-cycle fatigue
-- crack-growth modelling
+What I Learned
 
-## PyTorch Structural Surrogate
+BodySimPy reinforced several engineering-development principles.
 
-BodySimPy includes a feed-forward neural-network surrogate trained on a six-dimensional CalculiX design dataset.
+Automate repetitive engineering work
 
-### Inputs
+Python provides significantly more value when it controls the complete simulation workflow rather than merely post-processing isolated files.
 
-- wall thickness
-- section height
-- section width
-- Young's modulus
-- material density
-- applied tip force
+Validate numerical models
 
-### Predicted responses
+Finite-element output should not be accepted only because a solver completed successfully. Analytical references, mesh studies, trend checks and explicit assumptions are essential.
 
-- maximum axial stress
-- tip displacement
-- mode-1 natural frequency
+Separate physics from software infrastructure
 
-The training dataset is generated using Latin Hypercube sampling across a bounded engineering design space and evaluated using automated static and modal CalculiX analyses.
+Domain models, solver adapters, parsers, analyses and reporting become easier to test when responsibilities are separated.
 
-The dataset is separated into training, validation and held-out test subsets. Input and target normalization statistics are fitted exclusively on the training subset.
+Quantify uncertainty rather than hiding it
 
-Training includes validation monitoring, early stopping and best-model checkpointing.
+A deterministic baseline gives one answer. Stochastic studies reveal how response distributions change when engineering inputs vary.
 
-The surrogate is intended for interpolation within the sampled design space and does not replace finite-element validation outside that domain.
+ML usefulness depends on economics as well as accuracy
 
-## Simulation QA Agent
+A surrogate is valuable only when its prediction quality, training-data cost, evaluation volume and domain of validity make the trade-off worthwhile.
 
-BodySimPy includes a deterministic simulation-quality-assurance agent
-that orchestrates validated analysis tools after a structural simulation
-completes.
+AI output still requires engineering judgement
 
-Depending on available metadata, the agent can:
+AI coding tools can accelerate exploration and testing, but physical assumptions, numerical methods and final implementation decisions remain human engineering responsibilities.
 
-- verify solver completion;
-- inspect simulation logs;
-- compare structural responses with a baseline;
-- check supplied stress thresholds;
-- detect excessive modal-frequency shifts;
-- screen results for statistical outliers;
-- produce a human-readable engineering summary.
+Communication is part of engineering
 
-The agent does not independently generate engineering truth. Its role is
-to select and coordinate deterministic tools whose outputs remain
-testable and reviewable.
+A technically correct Python workflow is incomplete if its results cannot be communicated clearly to engineers, reviewers and decision-makers.
 
-See [`docs/simulation_qa_agent.md`](docs/simulation_qa_agent.md) for the
-workflow and limitations.
+Limitations
+
+BodySimPy is a portfolio and engineering-method development project. Its results must be interpreted within the assumptions of the implemented model.
+
+Current limitations include:
+
+the structural geometry is a simplified crossmember surrogate rather than a production body-in-white model;
+beam idealization does not represent detailed shell geometry, spot welds, adhesives, joints, local stamped features or contact;
+materials are currently represented using simplified linear-elastic isotropic behaviour;
+boundary conditions and loads are idealized;
+finite-element validation is primarily against analytical mechanics rather than physical vehicle-test data;
+numerical agreement with the analytical surrogate does not constitute validation of a real automotive structure;
+stochastic input distributions are study assumptions rather than measured manufacturing distributions;
+sampled threshold-exceedance fractions are not real-world failure probabilities;
+simple correlation and regression sensitivity metrics are screening tools rather than full global sensitivity analysis;
+the initial fatigue model uses simplified S-N and Palmgren-Miner damage assumptions;
+fatigue calculations do not yet model weld classes, notch effects, rainflow counting, mean-stress correction, multiaxial fatigue, low-cycle fatigue or crack growth;
+the PyTorch surrogate reproduces the underlying CalculiX model and cannot improve the physical fidelity of its training labels;
+ML accuracy has only been demonstrated inside the sampled parameter domain;
+surrogate predictions outside that domain should not be treated as validated extrapolation;
+runtime comparisons depend on hardware, solver settings and benchmarking methodology;
+statistical outlier detection in the QA workflow is a screening heuristic;
+Simulation QA statuses support engineering review and do not replace engineering sign-off;
+AI-assisted development tools may propose incorrect code or engineering assumptions and therefore require human validation.
+
+These limitations are intentionally documented because acknowledging model boundaries is part of responsible engineering analysis.
+
+Future Development
+
+Potential extensions include:
+
+shell-element automotive structural models;
+spot-weld and adhesive-joint representation;
+additional static and dynamic load cases;
+geometry import and richer meshing workflows;
+experimental or high-fidelity reference validation;
+nonlinear material behaviour;
+buckling analysis;
+transient structural dynamics;
+rainflow cycle counting;
+mean-stress corrections;
+welded-joint fatigue classes;
+global sensitivity analysis;
+correlated manufacturing uncertainty;
+optimization loops;
+uncertainty-aware ML surrogates;
+automatic model-domain checking before surrogate inference;
+richer simulation QA tooling;
+expanded CLI orchestration;
+interactive engineering dashboards.
+
+Quick Start
+
+Clone the repository:
+
+git clone https://github.com/savbcar/BodySimPy.git
+cd BodySimPy
+
+Create and activate a virtual environment:
+
+python3.11 -m venv .venv
+source .venv/bin/activate
+
+Upgrade pip:
+
+python -m pip install --upgrade pip
+
+Install BodySimPy and development dependencies:
+
+python -m pip install -e ".[dev]"
+
+Install CalculiX on Ubuntu / WSL:
+
+sudo apt update
+sudo apt install calculix-ccx
+
+Run the quality gate:
+
+ruff format --check .
+ruff check .
+mypy src
+python -m pytest
+
+Explore the CLI:
+
+bodysim --help
+Project Status
+
+BodySimPy is under active development as a structural CAE and engineering-software portfolio project.
+
+The focus is on:
+
+reproducibility, validation, automation, explicit assumptions and engineering interpretation.
+
+License
+
+MIT License.
