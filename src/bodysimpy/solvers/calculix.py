@@ -5,18 +5,25 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from bodysimpy.domain.results import SimulationResult
+from bodysimpy.domain.results import ModalResult, SimulationResult
 from bodysimpy.domain.structural_model import StructuralModel
-from bodysimpy.solvers.parsers.dat_parser import parse_tip_displacement
-from bodysimpy.solvers.parsers.frd_parser import parse_max_abs_stress_component
+from bodysimpy.solvers.parsers.dat_parser import (
+    parse_eigenfrequencies,
+    parse_tip_displacement,
+)
+from bodysimpy.solvers.parsers.frd_parser import (
+    parse_max_abs_stress_component,
+)
 
 
 class CalculiXError(RuntimeError):
     """Raised when a CalculiX analysis cannot be completed."""
 
 
-def build_input_deck(model: StructuralModel) -> str:
-    """Generate a CalculiX input deck for a cantilever box beam."""
+def _build_model_definition(
+    model: StructuralModel,
+) -> list[str]:
+    """Generate the solver model definition shared by all analysis steps."""
 
     element_count = model.mesh_elements
     node_count = 2 * element_count + 1
@@ -29,6 +36,7 @@ def build_input_deck(model: StructuralModel) -> str:
 
     for node_index in range(node_count):
         node_id = node_index + 1
+
         x_coordinate = model.length_m * node_index / (2 * element_count)
 
         lines.append(f"{node_id},{x_coordinate:.12e},0.0,0.0")
@@ -58,7 +66,7 @@ def build_input_deck(model: StructuralModel) -> str:
             (f"{model.material.youngs_modulus_pa:.12e},{model.material.poisson_ratio:.12e}"),
             "*DENSITY",
             f"{model.material.density_kg_m3:.12e}",
-            "*BEAM SECTION,ELSET=EALL,MATERIAL=STEEL,SECTION=BOX",
+            ("*BEAM SECTION,ELSET=EALL,MATERIAL=STEEL,SECTION=BOX"),
             (
                 f"{model.section.height_m:.12e},"
                 f"{model.section.width_m:.12e},"
@@ -68,6 +76,21 @@ def build_input_deck(model: StructuralModel) -> str:
                 f"{model.section.thickness_m:.12e}"
             ),
             "0.0,0.0,1.0",
+        ]
+    )
+
+    return lines
+
+
+def build_input_deck(
+    model: StructuralModel,
+) -> str:
+    """Generate a CalculiX static input deck."""
+
+    lines = _build_model_definition(model)
+
+    lines.extend(
+        [
             "*STEP",
             "*STATIC",
             "*CLOAD",
@@ -83,6 +106,32 @@ def build_input_deck(model: StructuralModel) -> str:
     return "\n".join(lines) + "\n"
 
 
+def build_modal_input_deck(
+    model: StructuralModel,
+    *,
+    modes: int,
+) -> str:
+    """Generate a CalculiX free-vibration modal input deck."""
+
+    if modes <= 0:
+        raise ValueError("Number of requested modes must be positive.")
+
+    lines = _build_model_definition(model)
+
+    lines.extend(
+        [
+            "*STEP",
+            "*FREQUENCY",
+            str(modes),
+            "*NODE FILE",
+            "U",
+            "*END STEP",
+        ]
+    )
+
+    return "\n".join(lines) + "\n"
+
+
 @dataclass(frozen=True, slots=True)
 class CalculiXSolver:
     """CalculiX CrunchiX structural solver adapter."""
@@ -91,14 +140,23 @@ class CalculiXSolver:
     work_root: Path = Path("results/raw")
     timeout_seconds: float = 60.0
 
-    def run(self, model: StructuralModel) -> SimulationResult:
+    def run(
+        self,
+        model: StructuralModel,
+    ) -> SimulationResult:
+        """Run a CalculiX static structural analysis."""
+
         executable_path = shutil.which(self.executable)
 
         if executable_path is None:
             raise CalculiXError(f"CalculiX executable '{self.executable}' was not found.")
 
         work_directory = self.work_root / model.name
-        work_directory.mkdir(parents=True, exist_ok=True)
+
+        work_directory.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         job_name = "static"
 
@@ -111,9 +169,13 @@ class CalculiXSolver:
 
         for suffix in generated_suffixes:
             output_path = work_directory / f"{job_name}{suffix}"
-            output_path.unlink(missing_ok=True)
+
+            output_path.unlink(
+                missing_ok=True,
+            )
 
         input_path = work_directory / f"{job_name}.inp"
+
         input_path.write_text(
             build_input_deck(model),
             encoding="utf-8",
@@ -121,13 +183,17 @@ class CalculiXSolver:
 
         try:
             completed = subprocess.run(
-                [executable_path, job_name],
+                [
+                    executable_path,
+                    job_name,
+                ],
                 cwd=work_directory,
                 capture_output=True,
                 text=True,
                 check=False,
                 timeout=self.timeout_seconds,
             )
+
         except subprocess.TimeoutExpired as error:
             raise CalculiXError("CalculiX execution exceeded the configured timeout.") from error
 
@@ -139,6 +205,7 @@ class CalculiXSolver:
             )
 
         dat_path = work_directory / f"{job_name}.dat"
+
         frd_path = work_directory / f"{job_name}.frd"
 
         if not dat_path.exists():
@@ -164,5 +231,102 @@ class CalculiXSolver:
             solver_name="calculix",
             tip_deflection_m=tip_deflection,
             max_axial_stress_pa=max_axial_stress,
+            work_directory=work_directory,
+        )
+
+    def run_modal(
+        self,
+        model: StructuralModel,
+        *,
+        modes: int,
+    ) -> ModalResult:
+        """Run a CalculiX free-vibration frequency analysis."""
+
+        if modes <= 0:
+            raise ValueError("Number of requested modes must be positive.")
+
+        executable_path = shutil.which(self.executable)
+
+        if executable_path is None:
+            raise CalculiXError(f"CalculiX executable '{self.executable}' was not found.")
+
+        work_directory = self.work_root / f"{model.name}_modal"
+
+        work_directory.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        job_name = "modal"
+
+        generated_suffixes = (
+            ".dat",
+            ".frd",
+            ".eig",
+            ".sta",
+            ".cvg",
+        )
+
+        for suffix in generated_suffixes:
+            output_path = work_directory / f"{job_name}{suffix}"
+
+            output_path.unlink(
+                missing_ok=True,
+            )
+
+        input_path = work_directory / f"{job_name}.inp"
+
+        input_path.write_text(
+            build_modal_input_deck(
+                model,
+                modes=modes,
+            ),
+            encoding="utf-8",
+        )
+
+        try:
+            completed = subprocess.run(
+                [
+                    executable_path,
+                    job_name,
+                ],
+                cwd=work_directory,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=self.timeout_seconds,
+            )
+
+        except subprocess.TimeoutExpired as error:
+            raise CalculiXError(
+                "CalculiX modal execution exceeded the configured timeout."
+            ) from error
+
+        if completed.returncode != 0:
+            raise CalculiXError(
+                "CalculiX modal execution failed.\n"
+                f"stdout:\n{completed.stdout}\n"
+                f"stderr:\n{completed.stderr}"
+            )
+
+        dat_path = work_directory / f"{job_name}.dat"
+
+        if not dat_path.exists():
+            raise CalculiXError(
+                "CalculiX modal analysis completed without producing the expected .dat file."
+            )
+
+        frequencies = parse_eigenfrequencies(dat_path)
+
+        if len(frequencies) < modes:
+            raise CalculiXError(
+                "CalculiX returned fewer eigenfrequencies "
+                f"than requested: "
+                f"{len(frequencies)} < {modes}."
+            )
+
+        return ModalResult(
+            solver_name="calculix",
+            natural_frequencies_hz=(frequencies[:modes]),
             work_directory=work_directory,
         )
